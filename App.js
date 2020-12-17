@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {FlatList, StyleSheet, View, Button} from 'react-native';
 import GoalItem from "./components/GoalItem";
 import GoalInput from "./components/GoalInput";
@@ -7,11 +7,24 @@ export default function App() {
   const [courseGoals, setCourseGoals] = useState([]);
   const [isAddMode, setIsAddMode] = useState(false);
 
+  useEffect(() => {
+    fetch()
+  });
+
   const addGoalHandler = (goal) => {
-    setCourseGoals(currentGoals => [...currentGoals, {
+    const newGoal = {
       key: Math.random().toString(),
       value: goal
-    }]);
+    };
+    setCourseGoals(currentGoals => [...currentGoals, newGoal]);
+
+    fetch(`https://goallist-d24fb-default-rtdb.firebaseio.com/goals.json`, {
+      method: 'POST',
+      body: JSON.stringify(newGoal)
+    })
+    .then(res => console.log(res.json()))
+    .catch(err => console.log(err))
+
     setIsAddMode(false);
   }
 

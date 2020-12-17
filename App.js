@@ -2,69 +2,86 @@ import React, {useState, useEffect} from 'react';
 import {FlatList, StyleSheet, View, Button} from 'react-native';
 import GoalItem from "./components/GoalItem";
 import GoalInput from "./components/GoalInput";
+import {addGoal, fetchAllGoals, removeGoal} from "./service/goal.service";
 
 export default function App() {
-  const [courseGoals, setCourseGoals] = useState([]);
-  const [isAddMode, setIsAddMode] = useState(false);
+    const [courseGoals, setCourseGoals] = useState([]);
+    const [isAddMode, setIsAddMode] = useState(false);
 
-  useEffect(() => {
-    fetch()
-  });
+    useEffect(() => {
+        fetchGoalFromDB();
+    });
 
-  const addGoalHandler = (goal) => {
-    const newGoal = {
-      key: Math.random().toString(),
-      value: goal
-    };
-    setCourseGoals(currentGoals => [...currentGoals, newGoal]);
+    const fetchGoalFromDB = () => {
+        return fetch('https://goallist-d24fb-default-rtdb.firebaseio.com/goals.json')
+            .then(res => res.json())
+            .then(parseRes => {
+                    const goals = [];
 
-    fetch(`https://goallist-d24fb-default-rtdb.firebaseio.com/goals.json`, {
-      method: 'POST',
-      body: JSON.stringify(newGoal)
-    })
-    .then(res => console.log(res.json()))
-    .catch(err => console.log(err))
+                    for (const k in parseRes) {
+                        goals.push({
+                            key: parseRes[k].key,
+                            value: parseRes[k].value,
+                            id: k
+                        })
+                    }
+                    setCourseGoals(goals);
+                }
+            )
+    }
 
-    setIsAddMode(false);
-  }
+    const addGoalHandler = async (goal) => {
+        const newGoal = {
+            key: Math.random().toString(),
+            value: goal
+        };
 
-  const removeGoalHandler = (key) => {
-    setCourseGoals(currentGoals => {
-      return currentGoals.filter(goal => goal.key !== key);
-    })
-  }
+        const data = await addGoal(newGoal);
+        setIsAddMode(false);
+    }
 
-  const cancelAddMode = () => {
-    setIsAddMode(false);
-  }
+    const removeGoalHandler = async (id) => {
+        await removeGoal(id);
+    }
 
-  return (
-      <View style={styles.screen}>
-        <Button title="Add New Goal" onPress={() => setIsAddMode(true)}/>
-        <GoalInput addGoalHandler={addGoalHandler}
-                   isAdd={isAddMode}
-                   cancelAddMode={cancelAddMode}
-        />
-        <FlatList data={courseGoals}
-                  renderItem={itemData =>
-                      <GoalItem
-                          item={itemData.item}
-                          onDeleteItem={removeGoalHandler}/>
-                  }/>
-      </View>
-  );
+    const cancelAddMode = () => {
+        setIsAddMode(false);
+    }
+
+    return (
+        <View style={styles.screen}>
+            <Button title="Add New Goal" onPress={() => setIsAddMode(true)}/>
+            <GoalInput addGoalHandler={addGoalHandler}
+                       isAdd={isAddMode}
+                       cancelAddMode={cancelAddMode}
+            />
+            <FlatList data={courseGoals}
+                      renderItem={itemData =>
+                          <GoalItem
+                              item={itemData.item}
+                              onDeleteItem={removeGoalHandler}/>
+                      }/>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    padding: 50
-  },
+    screen: {
+        padding: 50
+    },
 });
 
-{/*<ScrollView>*/}
-{/*  {courseGoals.map((goal, index) =>*/}
-{/*      <View style={styles.listItem} key={index}>*/}
-{/*        <Text>{goal}</Text>*/}
-{/*      </View>*/}
-{/*  )}*/}
-{/*</ScrollView>*/}
+{/*<ScrollView>*/
+}
+{/*  {courseGoals.map((goal, index) =>*/
+}
+{/*      <View style={styles.listItem} key={index}>*/
+}
+{/*        <Text>{goal}</Text>*/
+}
+{/*      </View>*/
+}
+{/*  )}*/
+}
+{/*</ScrollView>*/
+}

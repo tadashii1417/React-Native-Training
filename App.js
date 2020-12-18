@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {FlatList, StyleSheet, View, Button} from 'react-native';
 import GoalItem from "./components/GoalItem";
 import GoalInput from "./components/GoalInput";
-import {addGoal, fetchAllGoals, removeGoal} from "./service/goal.service";
+import {addGoal, removeGoal} from "./service/goal.service";
 
 export default function App() {
     const [courseGoals, setCourseGoals] = useState([]);
@@ -10,7 +10,7 @@ export default function App() {
 
     useEffect(() => {
         fetchGoalFromDB();
-    });
+    }, []);
 
     const fetchGoalFromDB = () => {
         return fetch('https://goallist-d24fb-default-rtdb.firebaseio.com/goals.json')
@@ -35,13 +35,14 @@ export default function App() {
             key: Math.random().toString(),
             value: goal
         };
-
-        const data = await addGoal(newGoal);
+        await addGoal(newGoal);
         setIsAddMode(false);
+        await fetchGoalFromDB();
     }
 
     const removeGoalHandler = async (id) => {
         await removeGoal(id);
+        await fetchGoalFromDB();
     }
 
     const cancelAddMode = () => {
@@ -66,22 +67,5 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        padding: 50
-    },
+    screen: {padding: 50},
 });
-
-{/*<ScrollView>*/
-}
-{/*  {courseGoals.map((goal, index) =>*/
-}
-{/*      <View style={styles.listItem} key={index}>*/
-}
-{/*        <Text>{goal}</Text>*/
-}
-{/*      </View>*/
-}
-{/*  )}*/
-}
-{/*</ScrollView>*/
-}
